@@ -1,0 +1,7 @@
+Main goal: provide a secure, audited version of cvs.
+
+- virtual users support
+- chroot support
+- tls support
+- minimal cvs support 
+- import cvs code and audit that

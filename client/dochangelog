@@ -1,0 +1,20 @@
+#!/usr/bin/perl
+$date=`date`;
+$uid ="\<deneb\@unixwave\.org\>";
+chomp($date);
+open(FD,">>Changelog");
+$string = "\n" . $date . " ". $uid;
+print FD $string;
+print $string;
+print FD "\n";
+print "\nList the changes (type end to quit):\n";
+do
+{
+$value=<STDIN>;
+chomp($value);
+if  (!($value=~/end/i))
+{
+print FD "$value\n";
+}
+} while (!($value=~/end/i));
+close(FD);
