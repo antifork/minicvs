@@ -9,3 +9,7 @@ Added working makefile stolen from aping
 
 Sat Apr 27 02:19:57 CEST 2002 <deneb-nx@penguin.it>
 Cleaned enviroment catchup
+
+Wed May  1 05:21:12 CEST 2002 <deneb-nx@penguin.it>
+Remove sstrcpy and added astrcpy
+added more lines, trying to do a module which sanitize enviroment

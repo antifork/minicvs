@@ -1,22 +1,19 @@
 #include <string.h>
 #include <stddef.h>
-#include "sstrcpy.h"
-size_t
-sstrcpy (char *dst, const char *src, size_t dest_siz)
+#include "astrcat.h"
+char *
+astrcat (char *dst, const char *src)
 {
-  if (dest_siz < 1)
-    return -1;
-
+char *ret;
+register size_t len = strlen(dst)+strlen(src)+1;
+ 
   if (dst == NULL)
-    return -1;
+    return NULL;
   if (src == NULL)
-    return -1;
-   
-  memset (dst, 0, dest_siz);
-  strncpy (dst, src, dest_siz - 1);
-  return strlen (dst);
-}
-size_t sstrcat(char *dest, const char *src, size_t dest_siz)
-{
-
+    return NULL;
+  if ((ret = malloc(len))==NULL)
+         return NULL;
+  memset (ret, 0, len);
+  snprintf(ret,len,"%s%s",dst,src); 
+  return ret;
 }
