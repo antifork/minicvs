@@ -37,14 +37,14 @@ PWD     = `pwd`
 .c.o:
 	$(CC) $(CFLAGS) $(DEBUG) -c $< -o $@ 
 
-all:	global 
+all:	util global
 	$(CC) -o minicvs $(OBJS) -l ./util/util.a -lz 	
 
-global:	util $(OBJS)
+global:	$(OBJS) 
 
 util:	
 	cd util; \
-	make
+	make 
 	
 utilclean:
 	cd util; \

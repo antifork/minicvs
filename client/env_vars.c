@@ -7,6 +7,7 @@ jluc69@users.sourceforge.net
 #include "mcvs.h"
 #include "xmalloc.h"
 #include "strlcpy.h"
+#include "astrcat.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -185,7 +186,7 @@ static char *
 fetch_tmpdir (void)
 {
   char *env_var;
-  char *cp;
+  char *cp,*ok;
   struct stat buf;
 /* check tempdir order:
 1) $HOME/tmp

@@ -56,7 +56,7 @@ char *CurDir;
 /*
  * 
  */
-char *Tmpdir = NULL;
+char *Tempdir = NULL;
 char *Editor = NULL;
 char *Cvsroot = NULL;
 

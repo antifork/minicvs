@@ -1,6 +1,7 @@
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <stddef.h>
-#include "astrcat.h"
 char *
 astrcat (char *dst, const char *src)
 {
