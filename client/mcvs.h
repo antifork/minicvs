@@ -201,4 +201,3 @@
    it is used for that purpose, and not to hold a string from the
    command line, the client, etc.  */
 #define MAXDATELEN	50
-

@@ -13,11 +13,7 @@ jluc69@users.sourceforge.net
 #include <unistd.h>
 #include <stddef.h>
 /* Private functions */
-static int checks (char *to_check, const char *check);
-static char *env_pathfile (const char *path);
-static int valid_program (const char *program);
 static char *env_cvsroot (const char *mycvsroot);
-static char *fetch_tmpdir (void);
 
 void
 purge_vars (char **editor, char **cvsroot, char **tmpdir)
@@ -161,21 +157,20 @@ checks (char *to_check, const char *check)
 }
 
 static int
-valid_program (const char *program)
+valid_program (const char *program, struct stat *prog)
 {
-  struct stat prog;
   int myprog = 1;
-  if (lstat (program, &prog) < 0)
+  if (lstat (program, prog) < 0)
     return -1;
 /* The program must be a regular file */
-  if (!S_ISREG (prog.st_mode))
+  if (!S_ISREG (prog->st_mode))
     return -2;
-  myprog = (S_ISUID | S_ISGID) & prog.st_mode;
+  myprog = (S_ISUID | S_ISGID) & prog->st_mode;
 /* The program cannot be suid or gid root */
-  if ((myprog) && ((prog.st_uid == 0) || (prog.st_gid == 0)))
+  if ((myprog) && ((prog->st_uid == 0) || (prog->st_gid == 0)))
     return -3;
 
-  myprog = (S_IXUSR | S_IXGRP | S_IXOTH) & prog.st_mode;
+  myprog = (S_IXUSR | S_IXGRP | S_IXOTH) & prog->st_mode;
 /* The program must be executable */
   if (!myprog)
     return -4;
@@ -183,7 +178,7 @@ valid_program (const char *program)
 }
 
 static char *
-fetch_tmpdir (void)
+fetch_tmpdir ()
 {
   char *env_var;
   char *cp,*ok;
