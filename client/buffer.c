@@ -1436,7 +1436,7 @@ packetizing_buffer_input (closure, data, need, size, got)
      void *closure;
      char *data;
      int need;
-     int size;
+     size_t size;
      int *got;
 {
     struct packetizing_buffer *pb = (struct packetizing_buffer *) closure;

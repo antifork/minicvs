@@ -9,13 +9,6 @@
  *
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <errno.h>
-#include "xmalloc.h"
-#include "vmalloc.h"
 
 /*
  * basic information used in all source files
@@ -37,14 +30,13 @@
 #include <signal.h>
 #include <dirent.h>
 #include <errno.h>
-#if defined(SERVER_SUPPORT) || defined(CLIENT_SUPPORT)
-#include "client.h"
-#endif
-
+#include <stddef.h>
 #include <regex.h>
 #include <getopt.h>
 #include <wait.h>
-
+#include "xmalloc.h"
+#include "valloc.h"
+#include "hash.h"
 /* This actually gets set in system.h.  Note that the _ONLY_ reason for
    this is if various system calls (getwd, getcwd, readlink) require/want
    us to use it.  All other parts of CVS allocate pathname buffers
@@ -57,6 +49,13 @@
 #endif
 #endif /* PATH_MAX */
 
+#ifndef EXIT_SUCCESS
+#define EXIT_SUCCESS 1
+#endif
+
+#ifndef EXIT_FAILURE
+#define EXIT_FAILURE 0
+#endif
 /* Definitions for the CVS Administrative directory and the files it contains.
    Here as #define's to make changing the names a simple task.  */
 
@@ -165,7 +164,7 @@
 #define	BAKPREFIX	".#"		/* when rcsmerge'ing */
 #ifndef DEVNULL
 #define	DEVNULL		"/dev/null"
-
+#endif
 /*
  * Special tags. -rHEAD	refers to the head of an RCS file, regardless of any
  * sticky tags. -rBASE	refers to the current revision the user has checked
@@ -189,9 +188,7 @@
 
 #define	IGNORE_ENV	"CVSIGNORE"	/* More files to ignore */
 #define WRAPPER_ENV     "CVSWRAPPERS"   /* name of the wrapper file */
-
-#define	CVSUMASK_ENV	"CVSUMASK"	/* Effective umask for repository */
-#define	CVSUMASK_DFLT	"022"	
+#define	UMASK_DFLT	022	
 /*
  * If the beginning of the Repository matches the following string, strip it
  * so that the output to the logfile does not contain a full pathname.
@@ -204,3 +201,4 @@
    it is used for that purpose, and not to hold a string from the
    command line, the client, etc.  */
 #define MAXDATELEN	50
+

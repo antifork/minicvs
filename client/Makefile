@@ -1,9 +1,6 @@
 #
 #  $Id$
 #
-#  Copyright (c) 2002 Nicola Bonelli <bonelli@antifork.org>
-#                     Roberto Ferranti <sbirish@sbirish.net>
-#		      Giorgio Zoppi <deneb@penguin.it>
 #
 #  All rights reserved.
 #
@@ -31,27 +28,28 @@
 
 CC      = gcc
 DEBUG   = # -DEADBUG 
-CFLAGS  = -g -static -Wall -I. 
+CFLAGS  = -g -static -Wall -I. -I./util 
 
 INSTALL = /usr/bin/ginstall -c 
 
-OBJS    = strlcpy.o sstrcpy.o xmalloc.o env_vars.o strip_path.o main.o
-
+OBJS    =  env_vars.o main.o
+PWD     = `pwd`
 .c.o:
 	$(CC) $(CFLAGS) $(DEBUG) -c $< -o $@ 
 
-all:  global 
-	$(CC) -o minicvs $(OBJS) $(LINUX) 	
+all:	global 
+	$(CC) -o minicvs $(OBJS) -l ./util/util.a -lz 	
 
-openbsd:  global
-	$(CC) -o minicvs $(OBJS) $(OPENBSD)
+global:	util $(OBJS)
 
-freebsd:  global
-	$(CC) -o minicvs $(OBJS) $(FREEBSD)
-
-global: $(OBJS)
-
+util:	
+	cd util; \
+	make
+	
+utilclean:
+	cd util; \
+	make clean
 install:
 	$(INSTALL) -c -m 0755 -g bin minicvs /bin
-clean:
+clean: utilclean
 	rm -Rf *~ minicvs *.o 
