@@ -41,5 +41,5 @@ line_opt;
 
 void
 bzeropt (line_opt * flags);
-int parse_options(int argc, char **argv, struct my_opt *options, struct opt_val *valopt);
+int parse_options(int argc, char **argv, line_opt *options, struct opt_val *valopt);
  

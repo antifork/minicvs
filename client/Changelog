@@ -1,15 +1,18 @@
 
-Thu Apr 25 17:30:06 CEST 2002 <deneb-nx@penguin.it>
+Thu Apr 25 17:30:06 CEST 2002 <deneb at penguin.it>
 Initial main import
 Partial root.c cleanup
 
-Fri Apr 26 23:00:41 CEST 2002 <deneb-nx@penguin.it>
+Fri Apr 26 23:00:41 CEST 2002 <deneb at penguin.it>
 Added working makefile stolen from aping
 
 
-Sat Apr 27 02:19:57 CEST 2002 <deneb-nx@penguin.it>
+Sat Apr 27 02:19:57 CEST 2002 <deneb at penguin.it>
 Cleaned enviroment catchup
 
-Wed May  1 05:21:12 CEST 2002 <deneb-nx@penguin.it>
+Wed May  1 05:21:12 CEST 2002 <deneb at penguin.it>
 Remove sstrcpy and added astrcpy
 added more lines, trying to do a module which sanitize enviroment
+
+Thu May  2 03:36:28 CEST 2002 <deneb at penguin.it>
+added some code to the env stuff
