@@ -7,7 +7,7 @@
  *
  * Heavily modified by deneb@penguin.it
  *
- /
+*/
 
 #include <stdio.h>
 #include <stdlib.h>

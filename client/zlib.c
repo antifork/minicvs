@@ -23,11 +23,6 @@
 
 #include <zlib.h>
 
-/* OS/2 doesn't have EIO.  FIXME: this whole notion of turning
-   a different error into EIO strikes me as pretty dubious.  */
-#if !defined (EIO)
-#define EIO EBADPOS
-#endif
 
 /* The compression interface is built upon the buffer data structure.
    We provide a buffer type which compresses or decompresses the data
@@ -621,12 +616,7 @@ read_and_gzip (fd, fullname, buf, size, len, level)
 
 		offset = zstr.next_out - *buf;
 		*size *= 2;
-		newbuf = realloc (*buf, *size);
-		if (newbuf == NULL)
-		{
-		    error (0, 0, "out of memory");
-		    return 1;
-		}
+		newbuf = xrealloc (*buf, *size);
 		*buf = newbuf;
 		zstr.next_out = *buf + offset;
 		zstr.avail_out = *size - offset;

@@ -1,3 +1,5 @@
+/* Here code is under the Pizza License:
+When you come here, if you want you offer me a big Pizza */
 #define MAX_ENV_VAR 1024
 #define OK_CVSROOT "QWERTYUIOPASDFGHJKLZXCVBNM1234567890qwertyuiopasdfghjklzxcvbnm:./@";
 #include "xmalloc.h"

@@ -108,11 +108,7 @@ char *Name_Root (char *dir, char *update_dir)
 	goto out;
     }
 
-#ifdef CLIENT_SUPPORT
     if ((strchr (root, ':') == NULL) && !isdir (root))
-#else /* ! CLIENT_SUPPORT */
-    if (!isdir (root))
-#endif /* CLIENT_SUPPORT */
     {
     /*
 	error (0, 0, "in directory %s:", xupdate_dir);
@@ -275,8 +271,7 @@ char *CVSroot_hostname;		/* the hostname or NULL if method == local */
 char *CVSroot_directory;	/* the directory name */
 
 int
-parse_cvsroot (CVSroot)
-    char *CVSroot;
+parse_cvsroot (char *CVSroot)
 {
     static int cvsroot_parsed = 0;
     char *cvsroot_copy, *cvsroot_save, *p;
@@ -285,7 +280,7 @@ parse_cvsroot (CVSroot)
     /* Don't go through the trouble twice. */
     if (cvsroot_parsed)
     {
-	error (0, 0, "WARNING (parse_cvsroot): someone called me twice!\n");
+/*	error (0, 0, "WARNING (parse_cvsroot): someone called me twice!\n");*/
 	return 0;
     }
 
@@ -316,8 +311,8 @@ parse_cvsroot (CVSroot)
 
 	if (! (p = strchr (method, ':')))
 	{
-	    error (0, 0, "bad CVSroot: %s", CVSroot);
-	    free (cvsroot_save);
+	    /*error (0, 0, "bad CVSroot: %s", CVSroot);*/
+	    xfree (cvsroot_save);
 	    return 1;
 	}
 	*p = '\0';
@@ -390,9 +385,9 @@ parse_cvsroot (CVSroot)
     }
 
     CVSroot_directory = xstrdup(cvsroot_copy);
-    free (cvsroot_save);
+    xfree (cvsroot_save);
 
-#if ! defined (CLIENT_SUPPORT) && ! defined (DEBUG)
+#if ! defined (DEBUG)
     if (CVSroot_method != local_method)
     {
 	error (0, 0, "Your CVSROOT is set for a remote access method");
@@ -406,7 +401,7 @@ parse_cvsroot (CVSroot)
 
     if (CVSroot_username && ! CVSroot_hostname)
     {
-	error (0, 0, "missing hostname in CVSROOT: %s", CVSroot);
+	/*error (0, 0, "missing hostname in CVSROOT: %s", CVSroot);*/
 	return 1;
     }
 
@@ -416,9 +411,10 @@ parse_cvsroot (CVSroot)
     case local_method:
 	if (CVSroot_username || CVSroot_hostname)
 	{
+	/*
 	    error (0, 0, "can't specify hostname and username in CVSROOT");
 	    error (0, 0, "when using local access method");
-	    error (0, 0, "(%s)", CVSroot);
+	    error (0, 0, "(%s)", CVSroot);*/
 	    return 1;
 	}
 	/* cvs.texinfo has always told people that CVSROOT must be an
@@ -427,11 +423,13 @@ parse_cvsroot (CVSroot)
 	   so there would seem to be little risk in making this a fatal
 	   error.  */
 	if (!isabsolute (CVSroot_directory))
-	    error (1, 0, "CVSROOT %s must be an absolute pathname",
-		   CVSroot_directory);
+	    exit(1);
+	/*    error (1, 0, "CVSROOT %s must be an absolute pathname",
+		   CVSroot_directory);*/
 	break;
    
     case server_method:
+    case tlsserver_method:
     case ext_method:
     case pserver_method:
 	check_hostname = 1;
