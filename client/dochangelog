@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 $date=`date`;
-$uid ="\<deneb\@unixwave\.org\>";
+$uid ="\<deneb-nx\@penguin\.it\>";
 chomp($date);
 open(FD,">>Changelog");
 $string = "\n" . $date . " ". $uid;

@@ -44,7 +44,7 @@ Name_Root (dir, update_dir)
 	cvsadm = xmalloc (cvsadm_sz);
 	(void) snprintf (cvsadm, cvsadm_sz,"%s/%s", dir, CVSADM);
 	tmp = xmalloc (strlen (dir) + sizeof (CVSADM_ROOT) + 10);
-	(void) snprintf (tmp,tmp_sz,"%s/%s", dir, CVSADM_ROOT);
+	(void) snprintf (tmp, tmp_sz, "%s/%s", dir, CVSADM_ROOT);
     }
     else
     {
@@ -123,10 +123,10 @@ Name_Root (dir, update_dir)
     strip_trailing_slashes (root);
     ret = xstrdup (root);
  out:
-    free (cvsadm);
-    free (tmp);
+    xfree (cvsadm);
+    xfree (tmp);
     if (root != NULL)
-	free (root);
+	xfree (root);
     return (ret);
 }
 
@@ -555,12 +555,6 @@ error_exit PROTO ((void))
     exit (1);
 }
 
-char *
-xstrdup (str)
-     const char *str;
-{
-    return strdup (str);
-}
 
 int
 isabsolute (dir)
