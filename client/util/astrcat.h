@@ -1,1 +1,1 @@
-char *sstrcpy(char *dst, const char *src);
+char *astrcat(char *dst, const char *src);
