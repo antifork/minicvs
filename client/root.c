@@ -7,22 +7,22 @@
  * Name of Root
  * 
  * Determine the path to the CVSROOT and set "Root" accordingly.
+ *
+ * Modified by cygnus@unixwave.org
  */
 
 
 /* Printable names for things in the CVSroot_method enum variable.
    Watch out if the enum is changed in cvs.h! */
+#include "mcvs.h"
 
 char *method_names[] = {
-    "local", "server (rsh)", "pserver", "kserver", "gserver", "ext", "fork"
+    "local", "server (rsh)", "pserver","tlsserver", "ext" 
 };
 
 #ifndef DEBUG
 
-char *
-Name_Root (dir, update_dir)
-    char *dir;
-    char *update_dir;
+char *Name_Root (char *dir, char *update_dir)
 {
     FILE *fpin;
     char *ret, *xupdate_dir;
@@ -70,15 +70,21 @@ Name_Root (dir, update_dir)
      * The assumption here is that the CVS Root is always contained in the
      * first line of the "Root" file.
      */
-    fpin = open_file (tmp, "r");
+    if ((fpin = fopen (tmp, "r"))==NULL)
+	{
+	xfree(cvsadm);
+	xfree(tmp);
+	return NULL;
+	}
 
     if (getline (&root, &root_allocated, fpin) < 0)
     {
 	/* FIXME: should be checking for end of file separately; errno
-	   is not set in that case.  */
+	   is not set in that case.  
 	error (0, 0, "in directory %s:", xupdate_dir);
 	error (0, errno, "cannot read %s", CVSADM_ROOT);
 	error (0, 0, "please correct this problem");
+	*/
 	ret = NULL;
 	goto out;
     }
@@ -91,16 +97,13 @@ Name_Root (dir, update_dir)
      * absolute pathname or specify a remote server.
      */
 
-    if (
-#ifdef CLIENT_SUPPORT
-	(strchr (root, ':') == NULL) &&
-#endif
-    	! isabsolute (root))
+    if ((strchr (root, ':') == NULL) && !isabsolute (root))
     {
-	error (0, 0, "in directory %s:", xupdate_dir);
+/*	error (0, 0, "in directory %s:", xupdate_dir);
 	error (0, 0,
 	       "ignoring %s because it does not contain an absolute pathname.",
 	       CVSADM_ROOT);
+	      */
 	ret = NULL;
 	goto out;
     }
@@ -111,10 +114,12 @@ Name_Root (dir, update_dir)
     if (!isdir (root))
 #endif /* CLIENT_SUPPORT */
     {
+    /*
 	error (0, 0, "in directory %s:", xupdate_dir);
 	error (0, 0,
 	       "ignoring %s because it specifies a non-existent repository %s",
 	       CVSADM_ROOT, root);
+	       */
 	ret = NULL;
 	goto out;
     }
@@ -135,16 +140,14 @@ Name_Root (dir, update_dir)
  * and/or the -d option to cvs will be validated or not necessary for
  * future work.
  */
-void
-Create_Root (dir, rootdir)
-    char *dir;
-    char *rootdir;
+int
+Create_Root (char *dir, char *rootdir)
 {
     FILE *fout;
     char *tmp;
-
+    size_t tmp_sz;
     if (noexec)
-	return;
+	return -1;
 
     /* record the current cvs root */
 
@@ -152,18 +155,23 @@ Create_Root (dir, rootdir)
     {
         if (dir != NULL)
 	{
-	    tmp = xmalloc (strlen (dir) + sizeof (CVSADM_ROOT) + 10);
-	    (void) sprintf (tmp, "%s/%s", dir, CVSADM_ROOT);
+	    tmp_sz = strlen (dir) + sizeof (CVSADM_ROOT) + 10;
+	    tmp = xmalloc (tmp_sz);
+	    snprintf (tmp, tmp_sz,"%s/%s", dir, CVSADM_ROOT);
 	}
         else
 	    tmp = xstrdup (CVSADM_ROOT);
 
-        fout = open_file (tmp, "w+");
+        if ((fout = fopen (tmp, "w+"))==NULL)
+	    {
+	    xfree(tmp);
+	    return -1;
+	    }
         if (fprintf (fout, "%s\n", rootdir) < 0)
 	    error (1, errno, "write to %s failed", tmp);
         if (fclose (fout) == EOF)
 	    error (1, errno, "cannot close %s", tmp);
-	free (tmp);
+	xfree (tmp);
     }
 }
 
@@ -176,56 +184,34 @@ Create_Root (dir, rootdir)
 
 static int root_allow_count;
 static char **root_allow_vector;
-static int root_allow_size;
+static size_t root_allow_size;
 
 void
-root_allow_add (arg)
-    char *arg;
+root_allow_add (char *arg)
 {
     char *p;
-
+    size_t p_sz;
+    
     if (root_allow_size <= root_allow_count)
     {
 	if (root_allow_size == 0)
 	{
 	    root_allow_size = 1;
 	    root_allow_vector =
-		(char **) malloc (root_allow_size * sizeof (char *));
+		(char **) xmalloc (root_allow_size * sizeof (char *));
 	}
 	else
 	{
 	    root_allow_size *= 2;
 	    root_allow_vector =
-		(char **) realloc (root_allow_vector,
+		(char **) xrealloc (root_allow_vector,
 				   root_allow_size * sizeof (char *));
 	}
 
-	if (root_allow_vector == NULL)
-	{
-	no_memory:
-	    /* Strictly speaking, we're not supposed to output anything
-	       now.  But we're about to exit(), give it a try.  */
-	    printf ("E Fatal server error, aborting.\n\
-error ENOMEM Virtual memory exhausted.\n");
-
-	    /* I'm doing this manually rather than via error_exit ()
-	       because I'm not sure whether we want to call server_cleanup.
-	       Needs more investigation....  */
-
-#ifdef SYSTEM_CLEANUP
-	    /* Hook for OS-specific behavior, for example socket
-	       subsystems on NT and OS2 or dealing with windows
-	       and arguments on Mac.  */
-	    SYSTEM_CLEANUP ();
-#endif
-
-	    exit (EXIT_FAILURE);
-	}
     }
-    p = malloc (strlen (arg) + 1);
-    if (p == NULL)
-	goto no_memory;
-    strcpy (p, arg);
+    p_sz = strlen (arg) + 1;
+    p = xmalloc (p_sz);
+    sstrcpy (p,arg,p_sz);
     root_allow_vector[root_allow_count++] = p;
 }
 
@@ -238,8 +224,7 @@ root_allow_free ()
 }
 
 int
-root_allow_ok (arg)
-    char *arg;
+root_allow_ok (char *arg)
 {
     int i;
 
@@ -323,8 +308,8 @@ parse_cvsroot (CVSroot)
 	/* Access method specified, as in
 	 * "cvs -d :pserver:user@host:/path",
 	 * "cvs -d :local:e:\path",
-	 * "cvs -d :kserver:user@host:/path", or
-	 * "cvs -d :fork:/path".
+	 * "cvs -d :tlsserver:user@host:/path", or
+	 * "cvs -d :ext:user@host:/cvs"
 	 * We need to get past that part of CVSroot before parsing the
 	 * rest of it.
 	 */
@@ -344,20 +329,16 @@ parse_cvsroot (CVSroot)
 	    CVSroot_method = local_method;
 	else if (strcmp (method, "pserver") == 0)
 	    CVSroot_method = pserver_method;
-	else if (strcmp (method, "kserver") == 0)
-	    CVSroot_method = kserver_method;
-	else if (strcmp (method, "gserver") == 0)
-	    CVSroot_method = gserver_method;
+	else if (strcmp (method, "tlsserver") == 0)
+	    CVSroot_method = tlsserver_method;
 	else if (strcmp (method, "server") == 0)
 	    CVSroot_method = server_method;
 	else if (strcmp (method, "ext") == 0)
 	    CVSroot_method = ext_method;
-	else if (strcmp (method, "fork") == 0)
-	    CVSroot_method = fork_method;
 	else
 	{
 	    error (0, 0, "unknown method in CVSroot: %s", CVSroot);
-	    free (cvsroot_save);
+	    xfree (cvsroot_save);
 	    return 1;
 	}
     }
@@ -449,38 +430,7 @@ parse_cvsroot (CVSroot)
 	    error (1, 0, "CVSROOT %s must be an absolute pathname",
 		   CVSroot_directory);
 	break;
-    case fork_method:
-	/* We want :fork: to behave the same as other remote access
-           methods.  Therefore, don't check to see that the repository
-           name is absolute -- let the server do it.  */
-	if (CVSroot_username || CVSroot_hostname)
-	{
-	    error (0, 0, "can't specify hostname and username in CVSROOT");
-	    error (0, 0, "when using fork access method");
-	    error (0, 0, "(%s)", CVSroot);
-	    return 1;
-	}
-	break;
-    case kserver_method:
-#ifndef HAVE_KERBEROS
-	error (0, 0, "Your CVSROOT is set for a kerberos access method");
-	error (0, 0, "but your CVS executable doesn't support it");
-	error (0, 0, "(%s)", CVSroot);
-	return 1;
-#else
-	check_hostname = 1;
-	break;
-#endif
-    case gserver_method:
-#ifndef HAVE_GSSAPI
-	error (0, 0, "Your CVSROOT is set for a GSSAPI access method");
-	error (0, 0, "but your CVS executable doesn't support it");
-	error (0, 0, "(%s)", CVSroot);
-	return 1;
-#else
-	check_hostname = 1;
-	break;
-#endif
+   
     case server_method:
     case ext_method:
     case pserver_method:
@@ -512,8 +462,7 @@ parse_cvsroot (CVSroot)
    repository DIR.  */
 
 void
-set_local_cvsroot (dir)
-    char *dir;
+set_local_cvsroot (char *dir)
 {
     if (CVSroot_original != NULL)
 	free (CVSroot_original);
@@ -532,6 +481,7 @@ set_local_cvsroot (dir)
 }
 
 
+/* here debug stuff */
 #ifdef DEBUG
 /* This is for testing the parsing function.  Use
 
@@ -550,7 +500,7 @@ char *command_name = "parse_cvsroot";		/* XXX is this used??? */
    debug when something goes wrong.  */
 
 void
-error_exit PROTO ((void))
+error_exit(void)
 {
     exit (1);
 }
